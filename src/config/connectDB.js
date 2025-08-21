@@ -1,10 +1,20 @@
-import mongoose from "mongoose";
+import pkg from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
 
-export const connectDB = async () =>{
-    try{
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log("MongoDB connected successfully");
-    } catch(error){
-        console.log(error.message)
-    }
-};
+const { Pool } = pkg;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+pool.on('connect', () => {
+  console.log('✅ Connected to PostgreSQL');
+});
+
+pool.on('error', (err) => {
+  console.error('❌ Unexpected error on idle client', err);
+  process.exit(-1); // Exit process with failure
+});
+
+export default pool;
