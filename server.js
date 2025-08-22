@@ -1,7 +1,10 @@
 import cors from "cors";
 import express from "express";
+import session from 'express-session';
+import passport from "passport";
 import dotenv from "dotenv";
 import pool from './src/config/connectDB.js';
+import authRoutes from './src/routes/auth.js';
 
 dotenv.config();
 const app = express();
@@ -18,6 +21,18 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Routes
+app.use('/auth', authRoutes);
 
 app.get('/', async (req, res) => {
   try {
