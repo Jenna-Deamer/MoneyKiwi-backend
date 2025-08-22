@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
-import pool from './config/connectDB.js';
+import pool from './connectDB.js';
 
 passport.use(new LocalStrategy(
   { usernameField: 'email' },
@@ -38,3 +38,5 @@ passport.deserializeUser(async (id, done) => {
     done(err);
   }
 });
+
+export default passport;

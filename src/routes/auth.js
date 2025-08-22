@@ -1,9 +1,11 @@
 import express from "express";
+import passport from 'passport';
 import bcrypt from "bcryptjs";
-import passport from "passport";
 import pool from "../config/connectDB.js";
+import '../config/passport-config.js';
 
 const router = express.Router();
+
 
 // Register route
 router.post("/register", async (req, res) => {
@@ -37,6 +39,22 @@ router.post("/register", async (req, res) => {
       .status(500)
       .json({ message: "Registration failed", error: err.message });
   }
+});
+
+// Login route
+router.post("/login", async (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+
+    if (!user) {
+      return res.status(401).json({ message: info.message || "Login failed" });
+    }
+    req.login(user, (err) => {
+      if (err) return next(err);
+
+      return res.json({ id: user.id, email: user.email });
+    });
+  })(req, res, next);
 });
 
 export default router;
