@@ -1,0 +1,19 @@
+import express from "express";
+import passport from "passport";
+import { register } from "../controllers/authController.js";
+
+const router = express.Router();
+
+
+router.post("/register", register);
+
+// Login route using passport local strategy
+router.post(
+  "/login",
+  passport.authenticate("local", { session: false }),
+  (req, res) => {
+    res.status(200).json({ message: "Login successful", user: req.user });
+  }
+);
+
+export default router;

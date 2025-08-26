@@ -4,7 +4,8 @@ import session from 'express-session';
 import passport from "passport";
 import dotenv from "dotenv";
 import pool from './src/config/connectDB.js';
-import authRoutes from './src/routes/auth.js';
+import authRoutes from './src/routes/authRoutes.js';
+import financialAccountsRoutes from './src/routes/financialAccountsRoutes.js'
 
 dotenv.config();
 const app = express();
@@ -33,6 +34,7 @@ app.use(passport.session());
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/accounts', financialAccountsRoutes)
 
 app.get('/', async (req, res) => {
   try {
