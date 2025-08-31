@@ -39,7 +39,7 @@ export const createAccount = async (req, res) => {
 			`INSERT INTO financial_accounts (user_id, name, account_type, institution, currency, description)
    VALUES ($1, $2, $3, $4, $5, $6)
    RETURNING *`,
-			[name, account_type, institution, currency, description]
+			[userId, name, account_type, institution, currency, description]
 		);
 
 		res.status(201).json(result.rows[0]);
@@ -49,4 +49,46 @@ export const createAccount = async (req, res) => {
 	}
 };
 
-export const updateAccount = (userId) => {};
+export const updateAccount = async (req, res) => {
+	const { accountId } = req.params;
+	const { name, account_type, institution, currency, description } = req.body;
+	const userId = req.user.id;
+
+	try {
+		const result = await pool.query(
+			`UPDATE financial_accounts
+       SET name = $1, account_type = $2, institution = $3, currency = $4, description = $5
+       WHERE id = $6 AND user_id = $7
+       RETURNING *`,
+			[
+				name,
+				account_type,
+				institution,
+				currency,
+				description,
+				accountId,
+				userId,
+			]
+		);
+
+		if (result.rowCount === 0) {
+			return res.status(404).json({ error: 'Account not found' });
+		}
+
+		res.status(201).json(result.rows[0]);
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Failed to update account' });
+	}
+};
+
+export const archiveAccount = async (req, res) => {
+	const { accountId } = req.params;
+	const userId = req.user.id;
+
+    try{
+
+    }catch(err){
+        
+    }
+};
