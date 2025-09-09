@@ -26,8 +26,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    httpOnly: true,    // prevents JS access
+    secure: false,     // true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  }
 }));
-
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());

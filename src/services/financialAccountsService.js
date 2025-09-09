@@ -1,5 +1,14 @@
 import pool from '../config/connectDB.js';
 
+const validAccountTypes = [
+	'chequing',
+	'savings',
+	'investment',
+	'cash',
+	'credit',
+];
+const validCurrencyCodes = ['CAD', 'USD'];
+
 export const getAccountsForUser = async (userId) => {
 	const result = await pool.query(
 		'SELECT * FROM financial_accounts WHERE user_id = $1 ORDER BY created_at DESC',
@@ -7,88 +16,61 @@ export const getAccountsForUser = async (userId) => {
 	);
 	return result.rows;
 };
-
-export const createAccount = async (req, res) => {
-	const { name, account_type, institution, currency, description } = req.body;
-	const userId = req.user.id;
+export const createAccount = async (userId, accountData) => {
+	const { name, account_type, institution, currency, description } =
+		accountData;
 
 	// validation
 	if (!name || !account_type || !currency || !institution) {
-		return res.status(400).json({ error: 'Required fields are missing' });
+		throw new Error('Required fields are missing');
 	}
-
-	const validAccountTypes = [
-		'Chequing',
-		'Savings',
-		'Investment',
-		'Cash',
-		'Credit',
-	];
 
 	if (!validAccountTypes.includes(account_type)) {
-		return res.status(400).json({ error: 'Invalid account type' });
+		throw new Error('Invalid account type');
 	}
 
-	const validCurrencyCodes = ['CAD', 'USD'];
 	if (!validCurrencyCodes.includes(currency)) {
-		return res.status(400).json({ error: 'Invalid currency' });
+		throw new Error('Invalid currency');
 	}
 
-	try {
-		const result = await pool.query(
-			`INSERT INTO financial_accounts (user_id, name, account_type, institution, currency, description)
-   VALUES ($1, $2, $3, $4, $5, $6)
-   RETURNING *`,
-			[userId, name, account_type, institution, currency, description]
-		);
+	const result = await pool.query(
+		`INSERT INTO financial_accounts (user_id, name, account_type, institution, currency, description)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+		[userId, name, account_type, institution, currency, description]
+	);
 
-		res.status(201).json(result.rows[0]);
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Failed to create account' });
-	}
+	return result.rows[0];
 };
 
-export const updateAccount = async (req, res) => {
-	const { accountId } = req.params;
-	const { name, account_type, institution, currency, description } = req.body;
-	const userId = req.user.id;
+export const updateAccount = async (userId, accountId, accountData) => {
+	const { name, account_type, institution, currency, description } =
+		accountData;
 
-	try {
-		const result = await pool.query(
-			`UPDATE financial_accounts
-       SET name = $1, account_type = $2, institution = $3, currency = $4, description = $5
-       WHERE id = $6 AND user_id = $7
-       RETURNING *`,
-			[
-				name,
-				account_type,
-				institution,
-				currency,
-				description,
-				accountId,
-				userId,
-			]
-		);
+	const result = await pool.query(
+		`UPDATE financial_accounts
+     SET name = $1, account_type = $2, institution = $3, currency = $4, description = $5
+     WHERE id = $6 AND user_id = $7 RETURNING *`,
+		[name, account_type, institution, currency, description, accountId, userId]
+	);
 
-		if (result.rowCount === 0) {
-			return res.status(404).json({ error: 'Account not found' });
-		}
-
-		res.status(201).json(result.rows[0]);
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Failed to update account' });
+	if (result.rowCount === 0) {
+		throw new Error('Account not found');
 	}
+
+	return result.rows[0];
 };
 
-export const archiveAccount = async (req, res) => {
-	const { accountId } = req.params;
-	const userId = req.user.id;
+export const archiveAccount = async (userId, accountId) => {
+	const result = await pool.query(
+		`UPDATE financial_accounts
+     SET archived = TRUE
+     WHERE id = $1 AND user_id = $2 RETURNING *`,
+		[accountId, userId]
+	);
 
-    try{
+	if (result.rowCount === 0) {
+		throw new Error('Account not found or already archived');
+	}
 
-    }catch(err){
-        
-    }
+	return result.rows[0];
 };

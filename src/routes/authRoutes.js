@@ -10,7 +10,7 @@ router.post("/register", register);
 // Login route using passport local strategy
 router.post(
   "/login",
-  passport.authenticate("local", { session: false }),
+  passport.authenticate("local", { session: true }),
   (req, res) => {
     res.status(200).json({ message: "Login successful", user: req.user });
   }
