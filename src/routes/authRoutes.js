@@ -12,7 +12,11 @@ router.post(
   "/login",
   passport.authenticate("local", { session: true }),
   (req, res) => {
-    res.status(200).json({ message: "Login successful", user: req.user });
+     const { id, email, home_country } = req.user;
+      res.status(200).json({
+      message: "Login successful",
+      user: { id, email, home_country }
+    });
   }
 );
 
